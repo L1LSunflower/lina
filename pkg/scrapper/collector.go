@@ -1,4 +1,4 @@
-package main
+package scrapper
 
 import (
 	"context"
@@ -118,7 +118,7 @@ func getProductContent(ctx context.Context, url string) (*entities.Item, error) 
 	if err != nil {
 		return nil, err
 	}
-	//// Get item sizes
+	// Get item sizes
 	if err = chromedp.Run(ctx, chromedp.Nodes(".p-relative", &nodes, chromedp.ByQueryAll)); err != nil {
 		return nil, err
 	}
@@ -170,15 +170,6 @@ func getProductContent(ctx context.Context, url string) (*entities.Item, error) 
 		Sizes:         sizes,
 		ImageLinks:    imageLinks,
 	}, nil
-}
-
-func getProductLink(attributes []string) string {
-	for _, attribute := range attributes {
-		if ind := strings.Index(attribute, attributeLink); ind >= 0 {
-			return url + attribute
-		}
-	}
-	return ""
 }
 
 func findInAttribute(attributes []string, pattern string) string {
