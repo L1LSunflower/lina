@@ -5,15 +5,6 @@ import (
 	"strings"
 )
 
-func ProductLink(attributes []string, attributeLink string) string {
-	for _, attribute := range attributes {
-		if ind := strings.Index(attribute, attributeLink); ind >= 0 {
-			return attribute
-		}
-	}
-	return ""
-}
-
 func FindInAttribute(attributes []string, pattern string) string {
 	for _, attribute := range attributes {
 		if i := strings.Index(attribute, pattern); i >= 0 {
