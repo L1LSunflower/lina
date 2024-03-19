@@ -38,7 +38,7 @@ type Scrapper struct {
 	UserAgent  string
 }
 
-func New(ctx context.Context, opts *Options) ScrapperInterface {
+func New(ctx context.Context, opts *Options) Driver {
 	return &Scrapper{
 		ctx:       ctx,
 		Headless:  opts.Headless,
@@ -61,6 +61,8 @@ func (s *Scrapper) InitInstance() {
 	s.ctx, s.cancelFunc = chromedp.NewExecAllocator(context.Background(), opts...)
 	if s.DebugMode {
 		s.ctx, s.cancelFunc = chromedp.NewContext(s.ctx, chromedp.WithDebugf(log.Printf))
+	} else {
+		s.ctx, s.cancelFunc = chromedp.NewContext(s.ctx)
 	}
 }
 
@@ -74,6 +76,14 @@ func (s *Scrapper) Navigate(url string, timeDelay time.Duration) error {
 
 func (s *Scrapper) ProcessPagination() error {
 	return nil
+}
+
+func (s *Scrapper) CheckIfExists(className string) (bool, error) {
+	var exist bool
+	if err := chromedp.Run(s.ctx, chromedp.EvaluateAsDevTools("document.getElementsByClassName('"+className+"').length > 0", &exist)); err != nil {
+		return exist, err
+	}
+	return exist, nil
 }
 
 func (s *Scrapper) Nodes(pattern string, selector querySelector) ([]*cdp.Node, error) {
@@ -111,3 +121,19 @@ func (s *Scrapper) TextFromNode(pattern string, selector querySelector, node *cd
 func (s *Scrapper) Close() error {
 	return chromedp.Cancel(s.ctx)
 }
+
+/*
+chromedp.ActionFunc(func(ctx context.Context) error {
+    _, exp, err := runtime.Evaluate(`window.scrollTo(0,document.body.scrollHeight);`).Do(ctx)
+    if err != nil {
+        return err
+    }
+    if exp != nil {
+        return exp
+    }
+    return nil
+
+})
+*/
+
+//cdp.EvaluateAsDevTools("document.getElementsByClassName('product-content_product_sale_line__Cz1ea ltr_mode w-auto').length > 0", value)

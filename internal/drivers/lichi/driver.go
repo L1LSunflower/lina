@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/L1LSunflower/lina/internal/drivers"
@@ -31,9 +32,9 @@ const (
 	userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
 )
 
-func Items(ctx context.Context) ([]*entities.Item, error) {
+func Items(ctx context.Context, headless, debugMode bool) ([]*entities.Item, error) {
 	// Create new scrapper instance
-	sc := scrapper.New(ctx, &scrapper.Options{Headless: true, DebugMode: false, UserAgent: userAgent})
+	sc := scrapper.New(ctx, &scrapper.Options{Headless: headless, DebugMode: debugMode, UserAgent: userAgent})
 	// Close with defer
 	defer sc.Close()
 	// Init chrome instance with options
@@ -49,15 +50,16 @@ func Items(ctx context.Context) ([]*entities.Item, error) {
 	for _, productLink := range products {
 		newItem, err = item(sc, productLink)
 		if err != nil {
-			log.Println("TIME: ", time.Now().Format(time.DateTime), " | ERROR: Get new item with error:", err)
+			log.Println(" | ERROR: Get new item with error:", err)
 			continue
 		}
+		fmt.Printf("ITEM: %v\n", newItem)
 		items = append(items, newItem)
 	}
 	return items, nil
 }
 
-func allProducts(sc scrapper.ScrapperInterface) ([]string, error) {
+func allProducts(sc scrapper.Driver) ([]string, error) {
 	// Navigate to website
 	if err := sc.Navigate(url+saleEndpoint, defaultTimeout); err != nil {
 		return nil, err
@@ -84,43 +86,43 @@ func allProducts(sc scrapper.ScrapperInterface) ([]string, error) {
 	return links, nil
 }
 
-func item(sc scrapper.ScrapperInterface, link string) (*entities.Item, error) {
+func item(sc scrapper.Driver, link string) (*entities.Item, error) {
 	var (
 		newItem = &entities.Item{}
 		err     error
 	)
 	// Navigate to website
 	if err = sc.Navigate(link, defaultTimeout); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("| ERROR: failed to get item's attributes link: %s, with error: %w", link, err)
 	}
 	// Get item name
 	if newItem.Name, err = sc.Text(h1Pattern, scrapper.ByQuery); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("| ERROR: failed to get item's attributes link: %s, with error: %w", link, err)
 	}
 	// Get item article
 	if newItem.Article, err = sc.Text(pPattern, scrapper.ByQuery); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("| ERROR: failed to get item's attributes link: %s, with error: %w", link, err)
 	}
 	// Get price and currency
 	if err = priceAndCurrency(sc, newItem); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("| ERROR: failed to get item's attributes link: %s, with error: %w", link, err)
 	}
 	// Get actual price
 	if err = actualPrice(sc, newItem); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("| ERROR: failed to get item's attributes link: %s, with error: %w", link, err)
 	}
 	// Get sizes
 	if newItem.Sizes, err = sizes(sc); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("| ERROR: failed to get item's attributes link: %s, with error: %w", link, err)
 	}
 	// Get image links
 	if newItem.ImageLinks, err = imageLinks(sc); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("| ERROR: failed to get item's attributes link: %s, with error: %w", link, err)
 	}
 	return newItem, nil
 }
 
-func priceAndCurrency(sc scrapper.ScrapperInterface, newItem *entities.Item) error {
+func priceAndCurrency(sc scrapper.Driver, newItem *entities.Item) error {
 	// Create error variable
 	var err error
 	// If panic recover it with defer
@@ -130,6 +132,17 @@ func priceAndCurrency(sc scrapper.ScrapperInterface, newItem *entities.Item) err
 		}
 	}(err)
 	// Get nodes with price
+	// Change dots to spaces
+	changedPattern := pricePattern
+	changedPattern = strings.ReplaceAll(changedPattern, ".", " ")
+	// Then check if element exist by class name
+	exist, err := sc.CheckIfExists(changedPattern)
+	if err != nil {
+		return fmt.Errorf("| ERROR: failed to evaluate element by class name with error: %w", err)
+	}
+	if !exist {
+		return fmt.Errorf("| WARN: element does not exist: %s", changedPattern)
+	}
 	nodes, err := sc.Nodes(pricePattern, scrapper.ByQuery)
 	if err != nil {
 		return err
@@ -153,7 +166,7 @@ func priceAndCurrency(sc scrapper.ScrapperInterface, newItem *entities.Item) err
 	return err
 }
 
-func actualPrice(sc scrapper.ScrapperInterface, newItem *entities.Item) error {
+func actualPrice(sc scrapper.Driver, newItem *entities.Item) error {
 	// Get actual price node
 	nodes, err := sc.Nodes(actualPricePattern, scrapper.ByQuery)
 	if err != nil {
@@ -175,7 +188,7 @@ func actualPrice(sc scrapper.ScrapperInterface, newItem *entities.Item) error {
 	return nil
 }
 
-func sizes(sc scrapper.ScrapperInterface) ([]string, error) {
+func sizes(sc scrapper.Driver) ([]string, error) {
 	// Get item sizes
 	nodes, err := sc.Nodes(pRelativePattern, scrapper.ByQueryAll)
 	if err != nil {
@@ -194,14 +207,16 @@ func sizes(sc scrapper.ScrapperInterface) ([]string, error) {
 		}
 		// Get link text from node
 		if size, err = sc.TextFromNode(spanPattern, scrapper.ByQuery, node); err != nil {
-			itemSizes = append(itemSizes, size)
+			log.Println("| ERROR: failed to get size with error: %w", err)
+			continue
 		}
+		itemSizes = append(itemSizes, size)
 	}
 	// Return item sizes
 	return itemSizes, nil
 }
 
-func imageLinks(sc scrapper.ScrapperInterface) ([]string, error) {
+func imageLinks(sc scrapper.Driver) ([]string, error) {
 	// Create error variable
 	var err error
 	// If panic recover it with defer
