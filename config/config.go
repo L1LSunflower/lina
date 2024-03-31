@@ -13,6 +13,13 @@ type Config struct {
 	Redis    Redis
 }
 
+type Database struct {
+	Username string `env:"DB_USERNAME"`
+	Password string `env:"DB_PASSWORD"`
+	DBName   string `env:"DB_NAME"`
+	SSLMode  bool   `env:"DB_SSL"`
+}
+
 type Chrome struct {
 	Headless  bool `env:"HEADLESS"`
 	DebugMode bool `env:"DEBUG_MODE"`

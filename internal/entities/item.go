@@ -1,6 +1,7 @@
 package entities
 
 type Item struct {
+	Id            string   `json:"id"`
 	Url           string   `json:"url"`
 	Name          string   `json:"name"`
 	Article       string   `json:"article"`
@@ -10,4 +11,6 @@ type Item struct {
 	Colors        []string `json:"colors"`
 	Sizes         []string `json:"sizes"`
 	ImageLinks    []string `json:"image_links"`
+	Hash          string   `json:"hash,omitempty"`
+	Status        string   `json:"status,omitempty"`
 }
