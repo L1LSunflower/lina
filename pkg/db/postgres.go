@@ -17,7 +17,7 @@ var (
 	pgOnce     sync.Once
 )
 
-func NewPG(ctx context.Context, connString string) (*Postgres, error) {
+func NewPG(ctx context.Context, host, port, username, password, dbName string, sslMode bool) (*Postgres, error) {
 	if pgInstance != nil {
 		return pgInstance, nil
 	}
@@ -26,6 +26,10 @@ func NewPG(ctx context.Context, connString string) (*Postgres, error) {
 		dbPool *pgxpool.Pool
 	)
 	pgOnce.Do(func() {
+		connString := "postgres://" + username + ":" + password + "@" + host + ":" + port + "/" + dbName
+		if !sslMode {
+			connString += "?sslmode=disable"
+		}
 		dbPool, err = pgxpool.New(ctx, connString)
 		pgInstance = &Postgres{Pool: dbPool}
 	})

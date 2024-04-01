@@ -12,8 +12,7 @@ import (
 
 func main() {
 	cfg := config.Conf()
-	dbString := "postgres://" + cfg.Database.Username + ":" + cfg.Database.Password + "@" + cfg.Database.Host + ":" + cfg.Database.Port + "/" + cfg.Database.DBName + "?sslmode=disable"
-	dbConn, err := db.NewPG(context.Background(), dbString)
+	dbConn, err := db.NewPG(context.Background(), cfg.Database.Host, cfg.Database.Port, cfg.Database.Username, cfg.Database.Password, cfg.Database.DBName, cfg.Database.SSLMode)
 	if err != nil {
 		log.Printf("ERROR | failed to connect to database with error: %s\n", err)
 	}
