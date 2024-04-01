@@ -33,7 +33,7 @@ func (d *DbRepository) AddItem(ctx context.Context, item *entities.Item) error {
 		"currency":      item.Currency,
 		"colors":        item.Colors,
 		"sizes":         item.Sizes,
-		"images_links":  item.ImageLinks,
+		"image_links":   item.ImageLinks,
 		"hash":          item.Hash,
 		"status":        item.Status,
 	}
@@ -62,12 +62,12 @@ func (d *DbRepository) AddItems(ctx context.Context, items []*entities.Item) err
 		"currency",
 		"colors",
 		"sizes",
-		"images_links",
+		"image_links",
 		"hash",
 		"status",
 	}
 	fieldsInLine, namedArgs := FieldsAndArgsFromSlice(fields, delimiter)
-	dbCtx, cancelFunc := tools.CtxWithTimeout(context.Background(), defaultTimeout)
+	dbCtx, cancelFunc := tools.CtxWithTimeout(context.Background(), 20 /*defaultTimeout*/)
 	defer cancelFunc()
 	query := "insert into items (" + fieldsInLine + ") values (" + namedArgs + ")"
 	batch := new(pgx.Batch)
@@ -82,7 +82,7 @@ func (d *DbRepository) AddItems(ctx context.Context, items []*entities.Item) err
 			"currency":      item.Currency,
 			"colors":        item.Colors,
 			"sizes":         item.Sizes,
-			"images_links":  item.ImageLinks,
+			"image_links":   item.ImageLinks,
 			"hash":          item.Hash,
 			"status":        item.Status,
 		}
@@ -113,7 +113,7 @@ func (d *DbRepository) Items(ctx context.Context, id, status string, limit int) 
 		"currency",
 		"colors",
 		"sizes",
-		"images_links",
+		"image_links",
 		"hash",
 		"status",
 	}
