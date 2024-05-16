@@ -29,8 +29,8 @@ type Chrome struct {
 }
 
 type Telegram struct {
-	TelegramApiKey string `env:"TELEGRAM_AP_KEY"`
-	TelegramKey    string `env:"TELEGRAM_KEY"`
+	TelegramUrl string `env:"TELEGRAM_URL"`
+	TelegramKey string `env:"TELEGRAM_KEY"`
 }
 
 type Redis struct {

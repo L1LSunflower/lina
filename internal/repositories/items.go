@@ -15,10 +15,13 @@ const (
 	defaultTimeout = 5
 )
 
-type DbRepository struct {
+type ItemsRepository struct{}
+
+func NewItemsRepository() Items {
+	return &ItemsRepository{}
 }
 
-func (d *DbRepository) AddItem(ctx context.Context, item *entities.Item) error {
+func (d *ItemsRepository) AddItem(ctx context.Context, item *entities.Item) error {
 	db, err := tools.DbFromCtx(ctx)
 	if err != nil {
 		return err
@@ -47,7 +50,7 @@ func (d *DbRepository) AddItem(ctx context.Context, item *entities.Item) error {
 	return nil
 }
 
-func (d *DbRepository) AddItems(ctx context.Context, items []*entities.Item) error {
+func (d *ItemsRepository) AddItems(ctx context.Context, items []*entities.Item) error {
 	db, err := tools.DbFromCtx(ctx)
 	if err != nil {
 		return err
@@ -98,7 +101,7 @@ func (d *DbRepository) AddItems(ctx context.Context, items []*entities.Item) err
 	return nil
 }
 
-func (d *DbRepository) Items(ctx context.Context, id, status string, limit int) ([]*entities.Item, error) {
+func (d *ItemsRepository) Items(ctx context.Context, id, status string, limit int) ([]*entities.Item, error) {
 	db, err := tools.DbFromCtx(ctx)
 	if err != nil {
 		return nil, err
@@ -153,7 +156,7 @@ func (d *DbRepository) Items(ctx context.Context, id, status string, limit int) 
 	return items, nil
 }
 
-func (d *DbRepository) CheckByHash(ctx context.Context, hash string) (bool, error) {
+func (d *ItemsRepository) CheckByHash(ctx context.Context, hash string) (bool, error) {
 	db, err := tools.DbFromCtx(ctx)
 	if err != nil {
 		return false, err

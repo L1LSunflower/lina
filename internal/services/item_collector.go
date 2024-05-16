@@ -15,7 +15,7 @@ import (
 	"github.com/L1LSunflower/lina/pkg/encryption"
 )
 
-func AllItems(ctx context.Context, ccfg config.Chrome, repo repositories.DBRepo) {
+func AllItems(ctx context.Context, ccfg config.Chrome, repo repositories.Items) {
 	ctx, cancel := tools.CtxWithCancel(ctx)
 	defer cancel()
 	// TODO: need item: image links

@@ -17,6 +17,6 @@ func main() {
 		log.Printf("ERROR | failed to connect to database with error: %s\n", err)
 	}
 	ctx := tools.CtxWithDepends(context.Background(), dbConn)
-	repo := new(repositories.DbRepository)
+	repo := new(repositories.ItemsRepository)
 	services.AllItems(ctx, cfg.Chrome, repo)
 }
