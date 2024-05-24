@@ -27,10 +27,10 @@ const (
 	imagePattern       = ".ui-image_ui_image__ZWo6S"
 
 	url          = "https://lichi.com"
-	staticUrl    = "https://static.lichi.com/product/"
+	staticURL    = "https://static.lichi.com/product/"
 	saleEndpoint = "/kz/ru/sale"
 
-	userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+	userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (HTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
 )
 
 func Items(ctx context.Context, headless, debugMode bool) ([]*entities.Item, error) {
@@ -44,7 +44,7 @@ func Items(ctx context.Context, headless, debugMode bool) ([]*entities.Item, err
 	if err != nil {
 		return nil, err
 	}
-	var (
+	var ( //nolint:prealloc
 		items   []*entities.Item
 		newItem *entities.Item
 	)
@@ -121,7 +121,7 @@ func item(sc scrapper.Driver, link string) (*entities.Item, error) {
 		return nil, fmt.Errorf("| ERROR: failed to get item's attributes link: %s, with error: %w", link, err)
 	}
 	// Set item url, its equal to link
-	newItem.Url = link
+	newItem.URL = link
 	return newItem, nil
 }
 
@@ -198,7 +198,7 @@ func sizes(sc scrapper.Driver) ([]string, error) {
 		return nil, err
 	}
 	// Declare variables
-	var (
+	var ( //nolint:prealloc
 		itemSizes []string
 		size      string
 	)
@@ -236,11 +236,11 @@ func imageLinks(sc scrapper.Driver, srcLink string) ([]string, error) {
 	// Divide link to get item id
 	dividedLink := strings.Split(srcLink, "/")
 	// Get item link
-	itemId := dividedLink[len(dividedLink)-1]
+	itemID := dividedLink[len(dividedLink)-1]
 	var itemImageLinks []string
 	for _, node := range nodes {
 		// Get item link from attributes
-		if link := drivers.FindInAttribute(node.Attributes, drivers.ProductFromLink(staticUrl+itemId)); link != "" {
+		if link := drivers.FindInAttribute(node.Attributes, drivers.ProductFromLink(staticURL+itemID)); link != "" {
 			// Added item links into slice
 			itemImageLinks = append(itemImageLinks, link)
 		}

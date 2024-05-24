@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 
 	"github.com/L1LSunflower/lina/internal/entities"
@@ -13,7 +15,6 @@ import (
 type Handler interface {
 	MediaGroup(data *entities.MediaGroup) (*http.Response, error)
 	SendMessage(data *entities.Message) (*http.Response, error)
-	Send(data json.Marshaler, method string, headers map[string]string) (*http.Response, error)
 }
 
 type THandler struct {
@@ -65,9 +66,15 @@ func (h *THandler) send(data json.Marshaler, method string, headers map[string]s
 		req.Header.Add(key, value)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	reqBody := io.NopCloser(bytes.NewBuffer(b))
+	req.Body = reqBody
+	log.Printf("TELEGRAM REQUEST: %v", reqBody)
 	resp, err := h.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
+	respBody, err := io.ReadAll(resp.Body)
+	resp.Body = io.NopCloser(bytes.NewBuffer(respBody))
+	log.Printf("TELEGRAM RESPONSE: %v", reqBody)
 	return resp, nil
 }

@@ -11,6 +11,7 @@ type Items interface {
 	AddItems(ctx context.Context, items []*entities.Item) error
 	Items(ctx context.Context, id, status string, limit int) ([]*entities.Item, error)
 	CheckByHash(ctx context.Context, hash string) (bool, error)
+	UpdateStatus(ctx context.Context, id, status string) error
 }
 
 type Users interface {

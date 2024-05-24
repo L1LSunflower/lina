@@ -8,8 +8,8 @@ const (
 )
 
 type Item struct {
-	Id            string   `json:"id,omitempty"`
-	Url           string   `json:"url"`
+	ID            string   `json:"id,omitempty"`
+	URL           string   `json:"url"`
 	Name          string   `json:"name"`
 	Article       string   `json:"article"`
 	ExpectedPrice int      `json:"expected_price"`
@@ -24,7 +24,7 @@ type Item struct {
 
 func (i *Item) SanitizedItem() Item {
 	itemCopy := *i
-	itemCopy.Id = ""
+	itemCopy.ID = ""
 	itemCopy.Hash = ""
 	itemCopy.Status = ""
 	itemCopy.Colors = nil
@@ -38,7 +38,7 @@ func (i *Item) PrepareToSave(hash string) {
 	if err != nil {
 		return
 	}
-	i.Id = uid.String()
+	i.ID = uid.String()
 	i.Hash = hash
 	i.Status = ReadyStatus
 }

@@ -27,8 +27,8 @@ func (d *ItemsRepository) AddItem(ctx context.Context, item *entities.Item) erro
 		return err
 	}
 	itemArgs := pgx.NamedArgs{
-		"id":            item.Id,
-		"url":           item.Url,
+		"id":            item.ID,
+		"url":           item.URL,
 		"name":          item.Name,
 		"article":       item.Article,
 		"price":         item.ExpectedPrice,
@@ -76,8 +76,8 @@ func (d *ItemsRepository) AddItems(ctx context.Context, items []*entities.Item) 
 	batch := new(pgx.Batch)
 	for _, item := range items {
 		args := pgx.NamedArgs{
-			"id":            item.Id,
-			"url":           item.Url,
+			"id":            item.ID,
+			"url":           item.URL,
 			"name":          item.Name,
 			"article":       item.Article,
 			"price":         item.ExpectedPrice,
@@ -120,7 +120,7 @@ func (d *ItemsRepository) Items(ctx context.Context, id, status string, limit in
 		"hash",
 		"status",
 	}
-	query := "select " + Fields(fields, delimiter) + "from items where id<@id and status=@status order by id limit=@limit"
+	query := "select " + Fields(fields, delimiter) + " from items where id<@id and status=@status order by id limit @limit"
 	args := pgx.NamedArgs{
 		"id":     id,
 		"limit":  limit,
@@ -136,8 +136,8 @@ func (d *ItemsRepository) Items(ctx context.Context, id, status string, limit in
 	for rows.Next() {
 		item := new(entities.Item)
 		if err = rows.Scan(
-			&item.Id,
-			&item.Url,
+			&item.ID,
+			&item.URL,
 			&item.Name,
 			&item.Article,
 			&item.ExpectedPrice,
@@ -170,4 +170,18 @@ func (d *ItemsRepository) CheckByHash(ctx context.Context, hash string) (bool, e
 		return false, err
 	}
 	return exist, nil
+}
+
+func (d *ItemsRepository) UpdateStatus(ctx context.Context, id, status string) error {
+	db, err := tools.DbFromCtx(ctx)
+	if err != nil {
+		return err
+	}
+	query := "update items set status=@status where id=@id"
+	dbCtx, cancelFunc := tools.CtxWithTimeout(context.Background(), defaultTimeout)
+	defer cancelFunc()
+	if _, err = db.Pool.Exec(dbCtx, query, pgx.NamedArgs{"id": id, "status": status}); err != nil {
+		return err
+	}
+	return nil
 }

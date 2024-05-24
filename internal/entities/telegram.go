@@ -81,7 +81,7 @@ func (m *Message) MarshalJSON() ([]byte, error) {
 func NewMsg(item *Item, chatId string) *Message {
 	sb := new(strings.Builder)
 	sb.WriteString("Name: " + item.Name + "\n")
-	sb.WriteString("Url: " + item.Url + "\n")
+	sb.WriteString("Url: " + item.URL + "\n")
 	sb.WriteString("Article: " + item.Article + "\n")
 	sb.WriteString("Expected Price: " + item.Name + " " + item.Currency + "\n")
 	sb.WriteString("Actual Price: " + item.Name + " " + item.Currency + "\n")
